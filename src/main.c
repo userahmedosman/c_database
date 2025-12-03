@@ -18,8 +18,9 @@ int main(int argc, char *argv[]) {
     char * file_path = NULL;
     bool newFile = false;
     int c;
-
-    while ((c = getopt(argc, argv, "nf: ")) != -1)
+    struct dbheader_t * dbHeader = NULL;
+    int fd = -1;
+    while ((c = getopt(argc, argv, "nf:")) != -1)
     {
         switch (c)
         {
@@ -38,21 +39,42 @@ int main(int argc, char *argv[]) {
                 fprintf (stderr,
                          "Unknown option character `\\x%x`.\n",
                          optopt);
-            break;
-        
+            return STATUS_ERROR;
         default:
-            return -1;
+            return STATUS_ERROR;
         }
     }
 
     if(file_path == NULL) {
         fprintf(stderr, "File path is required.\n");
         print_usage(argv);
-        return 0;
+        return STATUS_ERROR;
+    }
+
+    if (newFile) {
+        fd = create_db_file(file_path);
+        if(fd == STATUS_ERROR) {
+            return STATUS_ERROR;
+        }
+        if(create_db_header(fd, &dbHeader) == STATUS_ERROR) {
+            fprintf(stderr, "Failed to create database header\n");
+            return STATUS_ERROR;
+        }
+    } else {
+        fd = open_db_file(file_path);
+        if(fd == STATUS_ERROR) {
+            return STATUS_ERROR;
+        }
+
+        if(validate_db_header(fd, &dbHeader) == STATUS_ERROR) {
+            fprintf(stderr, "Failed to validate database header\n");
+            return STATUS_ERROR;
+        }
+        output_db_header(fd, dbHeader);
     }
 
     printf("File path: %s\n", file_path);
     printf("New file: %s\n", newFile ? "true" : "false");
-    
-    return 0;
+
+    return STATUS_SUCCESS;
 }

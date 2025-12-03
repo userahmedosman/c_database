@@ -1,9 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <stdio.h>
+int create_db_file(const char * filepath);
 
-
-FILE* open_file(const char* path, const char* mode);
-
+int open_db_file(const char * filepath);
 #endif // FILE_H

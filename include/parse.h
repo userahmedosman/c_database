@@ -1,13 +1,22 @@
 #ifndef PARSE_H
 #define PARSE_H
+#define HEADER_MAGIC 0x4c4c4144
 
+struct dbheader_t {
+    unsigned int magic;
+    unsigned short version;
+    unsigned short count;
+    unsigned int filesize;
+};
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+struct employee_t {
+    char name[256];
+    char address[256];
+    unsigned int hours;
+};
 
-char * parse_file_path(int argc, char *argv[]);
-
-bool parse_new_file_flag(int argc, char *argv[]);
-
-#endif // PARSE_H
+int create_db_header(int fd, struct dbheader_t **headerOut);
+int validate_db_header(int fd, struct dbheader_t **headerOut);
+int read_employees(int fd, struct dbheader_t *, struct employee_t **);
+void output_db_header(int fd, struct dbheader_t * header);
+#endif 
