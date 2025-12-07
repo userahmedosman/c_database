@@ -18,5 +18,6 @@ struct employee_t {
 int create_db_header(int fd, struct dbheader_t **headerOut);
 int validate_db_header(int fd, struct dbheader_t **headerOut);
 int read_employees(int fd, struct dbheader_t *, struct employee_t **);
-void output_db_header(int fd, struct dbheader_t * header);
+int add_new_employee(struct dbheader_t *, struct employee_t *, char *employeeData);
+int output_db_header(int fd, struct dbheader_t *);
 #endif 
