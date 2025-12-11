@@ -40,7 +40,7 @@ int create_db_header(int fd, struct dbheader_t **headerOut) {
 }
 
 int read_employees(int fd, struct dbheader_t * header, struct employee_t ** employeesOut) {
-    if(fd < 0 || header == NULL || employeesOut == NULL) {
+    if(fd < 0) {
         fprintf(stderr, "Invalid arguments to read_employees\n");
         return STATUS_ERROR;
     }
@@ -167,10 +167,7 @@ int validate_db_header(int fd, struct dbheader_t **headerOut) {
 int add_new_employee(struct dbheader_t * header,  struct employee_t * employees, char * employeeData) {
 
 
-    // if(sscanf(employeeData, "%255[^,],%255[^,],%u", name, address, &hours) != 3) {
-    //     fprintf(stderr, "Invalid employee data format. Expected format: name,address,hours\n");
-    //     return STATUS_ERROR;
-    // }
+  
     printf("Adding new employee with data: %s\n", employeeData);
     char * name  = strtok(employeeData, ",");
     char * address = strtok(NULL, ",");
@@ -179,17 +176,21 @@ int add_new_employee(struct dbheader_t * header,  struct employee_t * employees,
         fprintf(stderr, "Invalid employee data format. Expected format: name,address,hours\n");
         return STATUS_ERROR;
     }
-    printf("Parsed Employee Data - Name: %s, Address: %s, Hours: %s\n", name, address, hoursStr);
+    
+    strncpy(employees[header->count-1].name, name, sizeof(employees[header->count-1].name));
+    strncpy(employees[header->count-1].address, address, sizeof(employees[header->count-1].address));
+    employees[header->count-1].hours = atoi(hoursStr);
+    
   
     return STATUS_SUCCESS;
 }
-int output_db_header(int fd, struct dbheader_t * header) {
+int output_db_header(int fd, struct dbheader_t * header, struct employee_t * employee) {
     if(fd < 0 || header == NULL) {
         fprintf(stderr, "Invalid arguments to output_db_header\n");
         return STATUS_ERROR;
     }
 
-    // Convert to network byte order before writing
+    int counter = header->count;
     header->count = htons(header->count);
     header->filesize = htonl(header->filesize);
     header->version = htons(header->version);
@@ -197,22 +198,13 @@ int output_db_header(int fd, struct dbheader_t * header) {
     
     lseek(fd, 0, SEEK_SET);
 
-    if(write(fd, header, sizeof(struct dbheader_t)) != sizeof(struct dbheader_t)) {
-        perror("write in output_db_header");
+    write(fd, header, sizeof(struct dbheader_t));
+
+    for(int x =0; x < counter; x++){
+        employee[x].hours = htonl(employee[x].hours);
+        write(fd, &employee[x], sizeof(struct employee_t));
+    }
         return STATUS_ERROR;
     }
 
-    // Convert back to host for display
-    header->count = ntohs(header->count);
-    header->filesize = ntohl(header->filesize);
-    header->version = ntohs(header->version);
-    header->magic = ntohl(header->magic);
-
-    printf("Database Header:\n");
-    printf(" Magic: 0x%X\n", header->magic);
-    printf(" Version: %u\n", header->version);
-    printf(" Record Count: %u\n", header->count);
-    printf(" File Size: %u bytes\n", header->filesize);
     
-    return STATUS_SUCCESS;
-}

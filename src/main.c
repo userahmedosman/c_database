@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    // CRITICAL FIX: Handle employee addition for BOTH new and existing files
+    // CRITICAL FIX: Handle employee addition for BOTHPP new and existing files
     if(add_employee != NULL) {
         printf("Adding new employee: %s\n", add_employee);
         if(add_new_employee(dbHeader, employee, add_employee) == STATUS_ERROR) {
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     }
     
     // Update and output header (for both cases)
-    if(output_db_header(fd, dbHeader) == STATUS_ERROR) {
+    if(output_db_header(fd, dbHeader, employee) == STATUS_ERROR) {
         fprintf(stderr, "Failed to output database header\n");
         return STATUS_ERROR;
     }
